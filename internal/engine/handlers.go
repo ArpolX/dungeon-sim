@@ -33,7 +33,7 @@ func (g *Game) handleEnterDungeon(event models.Event) []models.Report {
 		)
 	}
 
-	if !g.canEnterDungeon(state, event.Time) {
+	if !canEnterDungeon(state, event.Time, g.Config) {
 		return impossibleMove(event)
 	}
 
@@ -51,7 +51,7 @@ func (g *Game) handleEnterDungeon(event models.Event) []models.Report {
 func (g *Game) handleKillMonster(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canKillMonster(state) {
+	if !canKillMonster(state, g.Config) {
 		return impossibleMove(event)
 	}
 
@@ -72,7 +72,7 @@ func (g *Game) handleKillMonster(event models.Event) []models.Report {
 func (g *Game) handleNextFloor(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canMoveNextFloor(state) {
+	if !canMoveNextFloor(state, g.Config) {
 		return impossibleMove(event)
 	}
 
@@ -89,7 +89,7 @@ func (g *Game) handleNextFloor(event models.Event) []models.Report {
 func (g *Game) handlePreviousFloor(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canMovePreviousFloor(state) {
+	if !canMovePreviousFloor(state) {
 		return impossibleMove(event)
 	}
 
@@ -104,7 +104,7 @@ func (g *Game) handlePreviousFloor(event models.Event) []models.Report {
 func (g *Game) handleEnterBossFloor(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canEnterBossFloor(state) {
+	if !canEnterBossFloor(state, g.Config) {
 		return impossibleMove(event)
 	}
 
@@ -119,12 +119,11 @@ func (g *Game) handleEnterBossFloor(event models.Event) []models.Report {
 func (g *Game) handleKillBoss(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canKillBoss(state) {
+	if !canKillBoss(state, g.Config) {
 		return impossibleMove(event)
 	}
 
 	state.IsBossKilled = true
-	state.Final = StateSuccess
 	state.BossFightDuration = event.Time.Sub(state.BossEnteredAt)
 
 	return singleReport(
@@ -136,16 +135,18 @@ func (g *Game) handleKillBoss(event models.Event) []models.Report {
 func (g *Game) handleLeaveDungeon(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canPlay(state) {
+	if !canPlay(state) {
 		return impossibleMove(event)
+	}
+
+	if canSuccessPlayer(state, g.Config) {
+		state.Final = StateSuccess
+	} else {
+		state.Final = StateFail
 	}
 
 	state.Exit = event.Time
 	state.IsDungeon = false
-
-	if state.Final == "" {
-		state.Final = StateFail
-	}
 
 	return singleReport(
 		event.Time,
@@ -156,7 +157,7 @@ func (g *Game) handleLeaveDungeon(event models.Event) []models.Report {
 func (g *Game) handleCannotContinue(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canPlay(state) {
+	if !canPlay(state) {
 		return impossibleMove(event)
 	}
 
@@ -176,7 +177,7 @@ func (g *Game) handleCannotContinue(event models.Event) []models.Report {
 func (g *Game) handleRestoreHealth(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canRestoreHealth(state) {
+	if !canRestoreHealth(state) {
 		return impossibleMove(event)
 	}
 
@@ -200,7 +201,7 @@ func (g *Game) handleRestoreHealth(event models.Event) []models.Report {
 func (g *Game) handleReceiveDamage(event models.Event) []models.Report {
 	state := g.Player[event.PlayerID]
 
-	if !g.canReceiveDamage(state) {
+	if !canReceiveDamage(state) {
 		return impossibleMove(event)
 	}
 

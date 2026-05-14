@@ -27,7 +27,6 @@ func TestGame_handleRegister(t *testing.T) {
 	}{
 		{
 			name: "successful registration",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					CurrentHP: 100,
@@ -47,10 +46,8 @@ func TestGame_handleRegister(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "duplicate registration",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered: true,
@@ -67,7 +64,7 @@ func TestGame_handleRegister(t *testing.T) {
 			want: []models.Report{
 				{
 					Time:    eventTime,
-					Comment: "Player [1] makes imposible move [1]",
+					Comment: "Player [1] makes impossible move [1]",
 				},
 			},
 		},
@@ -104,7 +101,6 @@ func TestGame_handleKillMonster(t *testing.T) {
 	}{
 		{
 			name: "successful monster kill",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered: true,
@@ -127,10 +123,8 @@ func TestGame_handleKillMonster(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "kill monster outside dungeon",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered: true,
@@ -148,7 +142,7 @@ func TestGame_handleKillMonster(t *testing.T) {
 			want: []models.Report{
 				{
 					Time:    eventTime,
-					Comment: "Player [1] makes imposible move [3]",
+					Comment: "Player [1] makes impossible move [3]",
 				},
 			},
 		},
@@ -189,7 +183,6 @@ func TestGame_handleNextFloor(t *testing.T) {
 	}{
 		{
 			name: "successful next floor",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered:        true,
@@ -213,10 +206,8 @@ func TestGame_handleNextFloor(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "next floor without enough kills",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered:        true,
@@ -236,7 +227,7 @@ func TestGame_handleNextFloor(t *testing.T) {
 			want: []models.Report{
 				{
 					Time:    eventTime,
-					Comment: "Player [1] makes imposible move [4]",
+					Comment: "Player [1] makes impossible move [4]",
 				},
 			},
 		},
@@ -277,7 +268,6 @@ func TestGame_handleRestoreHealth(t *testing.T) {
 	}{
 		{
 			name: "restore health",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered: true,
@@ -295,10 +285,8 @@ func TestGame_handleRestoreHealth(t *testing.T) {
 
 			wantHP: 70,
 		},
-
 		{
 			name: "health clamp to 100",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered: true,
@@ -352,7 +340,6 @@ func TestGame_handleReceiveDamage(t *testing.T) {
 	}{
 		{
 			name: "receive damage",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered: true,
@@ -370,10 +357,8 @@ func TestGame_handleReceiveDamage(t *testing.T) {
 
 			wantHP: 70,
 		},
-
 		{
 			name: "player dies",
-
 			player: map[int]*models.PlayerState{
 				1: {
 					IsRegistered: true,

@@ -22,10 +22,6 @@ func OutputLogs(report []models.Report) {
 func FinalOutput(state map[int]*models.PlayerState) {
 	var final []exitFinal
 	for k, v := range state {
-		if v.Final == "" {
-			v.Final = "FAIL"
-		}
-
 		var dungeonTime time.Duration
 
 		if !v.Exit.IsZero() && !v.Entered.IsZero() {

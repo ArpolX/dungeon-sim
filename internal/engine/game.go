@@ -4,67 +4,106 @@ import (
 	"context"
 	"dungeon-sim/internal/models"
 	rep "dungeon-sim/internal/report"
-	"fmt"
 
 	"go.uber.org/zap"
 )
 
+const (
+	EventRegister = iota + 1
+	EventEnterDungeon
+	EventKillMonster
+	EventNextFloor
+	EventPreviousFloor
+	EventEnterBossFloor
+	EventKillBoss
+	EventLeaveDungeon
+	EventCannotContinue
+	EventRestoreHealth
+	EventReceiveDamage
+)
+
+type eventHandler func(event models.Event) []models.Report
+
 type Game struct {
-	Config *models.Config
-	Player map[int]*models.PlayerState
+	Config   *models.Config
+	Player   map[int]*models.PlayerState
+	Handlers map[int]eventHandler
 }
 
 func NewGame(cfg *models.Config) *Game {
-	return &Game{
+	game := &Game{
 		Config: cfg,
 		Player: make(map[int]*models.PlayerState),
 	}
+
+	game.Handlers = game.initializeHandlers()
+
+	return game
 }
 
 func (g *Game) GameSimulation(ctx context.Context, events []models.Event, l *zap.SugaredLogger) {
 	for _, event := range events {
+		select {
+		case <-ctx.Done():
+			l.Warn("context done")
+			return
+		default:
+		}
+
 		var report []models.Report
 
-		if _, ok := g.Player[event.PlayerID]; !ok {
-			g.Player[event.PlayerID] = &models.PlayerState{
+		state, ok := g.Player[event.PlayerID]
+		if !ok {
+			state = &models.PlayerState{
 				CurrentHP: 100,
 			}
-		}
 
-		state := g.Player[event.PlayerID]
-		if state.Final == StateDisqual || state.Final == StateFail || state.Final == StateSuccess {
+			g.Player[event.PlayerID] = state
+		}
+		if state.Final != "" {
 			continue
 		}
-
-		switch event.EventID {
-		case 1:
-			report = g.handleRegister(event)
-		case 2:
-			report = g.handleEnterDungeon(event)
-		case 3:
-			report = g.handleKillMonster(event)
-		case 4:
-			report = g.handleNextFloor(event)
-		case 5:
-			report = g.handlePreviousFloor(event)
-		case 6:
-			report = g.handleEnterBossFloor(event)
-		case 7:
-			report = g.handleKillBoss(event)
-		case 8:
-			report = g.handleLeaveDungeon(event)
-		case 9:
-			report = g.handleCannotContinue(event)
-		case 10:
-			report = g.handleRestoreHealth(event)
-		case 11:
-			report = g.handleReceiveDamage(event)
-		default:
-			l.Warnf("No command number %d", event.EventID)
-			fmt.Printf("No command number %d", event.EventID)
+		if state.IsDungeon {
+			state.LastEventAt = event.Time
 		}
+
+		if v, ok := g.Handlers[event.EventID]; ok {
+			report = v(event)
+		} else {
+			l.Warnf("No command number %d", event.EventID)
+		}
+
 		rep.OutputLogs(report)
 	}
+	g.finalizeStates()
 
 	rep.FinalOutput(g.Player)
+}
+
+func (g *Game) initializeHandlers() map[int]eventHandler {
+	return map[int]eventHandler{
+		EventRegister:       g.handleRegister,
+		EventEnterDungeon:   g.handleEnterDungeon,
+		EventKillMonster:    g.handleKillMonster,
+		EventNextFloor:      g.handleNextFloor,
+		EventPreviousFloor:  g.handlePreviousFloor,
+		EventEnterBossFloor: g.handleEnterBossFloor,
+		EventKillBoss:       g.handleKillBoss,
+		EventLeaveDungeon:   g.handleLeaveDungeon,
+		EventCannotContinue: g.handleCannotContinue,
+		EventRestoreHealth:  g.handleRestoreHealth,
+		EventReceiveDamage:  g.handleReceiveDamage,
+	}
+}
+
+func (g *Game) finalizeStates() {
+	for _, state := range g.Player {
+		if state.Final == "" {
+			state.Final = "FAIL"
+		}
+
+		if state.Exit.IsZero() {
+			state.Exit = state.LastEventAt
+		}
+	}
 }

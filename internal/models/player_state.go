@@ -15,8 +15,9 @@ type PlayerState struct {
 
 	CurrentHP int
 
-	Entered time.Time
-	Exit    time.Time
+	Entered     time.Time
+	Exit        time.Time
+	LastEventAt time.Time
 
 	CurrentFloorStartedAt time.Time
 

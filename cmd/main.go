@@ -13,11 +13,11 @@ func main() {
 	logger.Init()
 	l := logger.GetLogger()
 
-	config, err := parser.ConfigParser(ctx, l)
+	config, err := parser.ConfigParser(l)
 	if err != nil {
 		l.Fatalf("error config parser %v", err)
 	}
-	events, err := parser.EventsParser(ctx, l)
+	events, err := parser.EventsParser(l)
 	if err != nil {
 		l.Fatalf("error events parser %v", err)
 	}

@@ -6,63 +6,67 @@ import (
 	"time"
 )
 
-func (g *Game) canPlay(state *models.PlayerState) bool {
-	return state.IsRegistered &&
-		!state.IsPlayerKilled
+func canPlay(state *models.PlayerState) bool {
+	return state.IsRegistered && !state.IsPlayerKilled
 }
 
-func (g *Game) canEnterDungeon(state *models.PlayerState, eventTime time.Time) bool {
-	openAt, _ := utils.ParseTime(g.Config.OpenAt)
+func canEnterDungeon(state *models.PlayerState, eventTime time.Time, cfg *models.Config) bool {
+	openAt, _ := utils.ParseTime(cfg.OpenAt)
 
 	closeTime := openAt.Add(
-		time.Duration(g.Config.Duration) * time.Hour,
+		time.Duration(cfg.Duration) * time.Hour,
 	)
 
-	return state.IsRegistered &&
-		!state.IsDungeon &&
-		!state.IsPlayerKilled &&
-		eventTime.Before(closeTime)
+	return state.IsRegistered && !state.IsDungeon && !state.IsPlayerKilled && eventTime.Before(closeTime)
 }
 
-func (g *Game) canKillMonster(state *models.PlayerState) bool {
-	return g.canPlay(state) &&
+func canKillMonster(state *models.PlayerState, cfg *models.Config) bool {
+	return canPlay(state) &&
 		state.IsDungeon &&
 		state.CurrentFloor > 0 &&
-		state.CurrentFloor <= g.Config.Floors &&
-		state.CurrentMonstersKill < g.Config.Monsters
+		state.CurrentFloor <= cfg.Floors &&
+		state.CurrentMonstersKill < cfg.Monsters
 }
 
-func (g *Game) canMoveNextFloor(state *models.PlayerState) bool {
-	return g.canPlay(state) &&
+func canMoveNextFloor(state *models.PlayerState, cfg *models.Config) bool {
+	return canPlay(state) &&
 		state.IsDungeon &&
-		state.CurrentMonstersKill == g.Config.Monsters &&
-		state.CurrentFloor < g.Config.Floors
+		state.CurrentMonstersKill == cfg.Monsters &&
+		state.CurrentFloor < cfg.Floors
 }
 
-func (g *Game) canMovePreviousFloor(state *models.PlayerState) bool {
-	return g.canPlay(state) &&
+func canMovePreviousFloor(state *models.PlayerState) bool {
+	return canPlay(state) &&
 		state.IsDungeon &&
 		state.CurrentFloor > 1
 }
 
-func (g *Game) canEnterBossFloor(state *models.PlayerState) bool {
-	return g.canPlay(state) &&
+func canEnterBossFloor(state *models.PlayerState, cfg *models.Config) bool {
+	return canPlay(state) &&
 		state.IsDungeon &&
-		state.CurrentFloor == g.Config.Floors &&
+		state.CurrentFloor == cfg.Floors &&
 		state.CurrentMonstersKill == 0 && !state.IsBossKilled
 }
 
-func (g *Game) canKillBoss(state *models.PlayerState) bool {
-	return g.canPlay(state) &&
+func canKillBoss(state *models.PlayerState, cfg *models.Config) bool {
+	return canPlay(state) &&
 		state.IsDungeon &&
-		state.CurrentFloor == g.Config.Floors &&
+		state.CurrentFloor == cfg.Floors &&
 		!state.IsBossKilled
 }
 
-func (g *Game) canRestoreHealth(state *models.PlayerState) bool {
-	return g.canPlay(state) && state.IsDungeon
+func canRestoreHealth(state *models.PlayerState) bool {
+	return canPlay(state) && state.IsDungeon
 }
 
-func (g *Game) canReceiveDamage(state *models.PlayerState) bool {
-	return g.canPlay(state) && state.IsDungeon
+func canReceiveDamage(state *models.PlayerState) bool {
+	return canPlay(state) && state.IsDungeon
+}
+
+func canSuccessPlayer(state *models.PlayerState, cfg *models.Config) bool {
+	return canPlay(state) &&
+		state.IsDungeon &&
+		state.CurrentFloor == cfg.Floors &&
+		state.IsBossKilled &&
+		state.AllMonstersKill == cfg.Monsters*(cfg.Floors-1)
 }

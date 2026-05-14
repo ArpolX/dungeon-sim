@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bufio"
-	"context"
 	"dungeon-sim/internal/models"
 	"dungeon-sim/internal/utils"
 	"fmt"
@@ -14,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func EventsParser(ctx context.Context, l *zap.SugaredLogger) ([]models.Event, error) {
+func EventsParser(l *zap.SugaredLogger) ([]models.Event, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		l.Errorf("error os.Getwd %v", err)

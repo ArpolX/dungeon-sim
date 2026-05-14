@@ -39,7 +39,7 @@ func RestoredHealth(playerID, hp int) string {
 }
 
 func ReceivedDamage(playerID, hp int) string {
-	return fmt.Sprintf("Player [%d] recieved [%d] of damage", playerID, hp)
+	return fmt.Sprintf("Player [%d] received [%d] of damage", playerID, hp)
 }
 
 func PlayerDead(playerID int) string {
@@ -51,12 +51,12 @@ func CannotContinue(playerID int, reason string) string {
 }
 
 func Disqualified(playerID int) string {
-	return fmt.Sprintf("Player [%d] disqualified", playerID)
+	return fmt.Sprintf("Player [%d] is disqualified", playerID)
 }
 
 func ImpossibleMove(playerID int, eventID int) string {
 	return fmt.Sprintf(
-		"Player [%d] makes imposible move [%d]",
+		"Player [%d] makes impossible move [%d]",
 		playerID,
 		eventID,
 	)

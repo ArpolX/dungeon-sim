@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"context"
 	"dungeon-sim/internal/models"
 	"encoding/json"
 	"fmt"
@@ -11,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func ConfigParser(ctx context.Context, l *zap.SugaredLogger) (*models.Config, error) {
+func ConfigParser(l *zap.SugaredLogger) (*models.Config, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		l.Errorf("error os.Getwd %v", err)
